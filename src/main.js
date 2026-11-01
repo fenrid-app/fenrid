@@ -130,8 +130,8 @@ function createUpdateWindow() {
       * { box-sizing: border-box; }
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 28px; background: #3149c4; }
       main { width: 100%; max-width: 348px; min-height: 340px; padding: 40px 32px 32px; border-radius: 12px; background: #191b22; box-shadow: 0 16px 38px rgba(13, 19, 51, .3); display: flex; flex-direction: column; align-items: center; text-align: center; }
-      img { display: block; width: 84px; height: 84px; object-fit: contain; }
-      h1 { margin: 22px 0 9px; font-size: 22px; font-weight: 650; letter-spacing: -.3px; }
+      img { display: block; width: 64px; height: 64px; object-fit: contain; }
+      h1 { margin: 18px 0 9px; font-size: 22px; font-weight: 650; letter-spacing: -.3px; }
       p { min-height: 42px; margin: 0; color: #b6bbcb; font-size: 14px; line-height: 1.55; }
       #dots { display: inline-block; min-width: 1.5em; text-align: left; }
       button { min-width: 116px; margin-top: auto; padding: 11px 20px; border: 0; border-radius: 8px; background: #4059f5; color: white; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
