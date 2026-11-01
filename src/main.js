@@ -130,7 +130,7 @@ function createUpdateWindow() {
       * { box-sizing: border-box; }
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 28px; background: #3149c4; }
       main { width: 100%; max-width: 348px; min-height: 340px; padding: 40px 32px 32px; border-radius: 12px; background: #191b22; box-shadow: 0 16px 38px rgba(13, 19, 51, .3); display: flex; flex-direction: column; align-items: center; text-align: center; }
-      img { display: block; width: 64px; height: 64px; object-fit: contain; }
+      img { display: block; width: 48px !important; height: 48px !important; max-width: 48px; max-height: 48px; object-fit: contain; }
       h1 { margin: 18px 0 9px; font-size: 22px; font-weight: 650; letter-spacing: -.3px; }
       p { min-height: 42px; margin: 0; color: #b6bbcb; font-size: 14px; line-height: 1.55; }
       #dots { display: inline-block; min-width: 1.5em; text-align: left; }
@@ -142,7 +142,7 @@ function createUpdateWindow() {
   </head>
   <body>
     <main>
-      <img src="data:image/png;base64,${logo}" alt="Fenrid logo">
+      <img src="data:image/png;base64,${logo}" alt="Fenrid logo" width="48" height="48" style="width:48px;height:48px;max-width:48px;max-height:48px">
       <h1 id="heading">Fenrid</h1>
       <p id="message">Checking for updates<span id="dots"></span></p>
       <button id="close" type="button" hidden>Close</button>
