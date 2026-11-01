@@ -4,7 +4,7 @@ Fenrid opens the Fenrid community app in a dedicated desktop window. It uses the
 
 ## Install
 
-Download the latest `Fenrid-<version>-x64.exe` from the [GitHub releases](https://github.com/fenrid-app/fenrid/releases), then follow the Fenrid-branded setup wizard. Choose an install location, click through the setup pages, and select **Install**. Fenrid is installed for the current Windows user, with Start menu and desktop shortcuts.
+Download the latest `Fenrid-<version>-x64.exe` from the [GitHub releases](https://github.com/fenrid-app/fenrid/releases), then follow the custom Fenrid setup wizard. The installer uses a frameless Fenrid window with its own blue title bar and setup pages instead of the standard Windows installer window. Choose an install location, click through the pages, and select **Install**. Fenrid is installed for the current Windows user, with Start menu and desktop shortcuts.
 
 The installer is not code-signed. Windows may show an unknown-publisher notice.
 
@@ -20,7 +20,7 @@ npm start
 npm run dist
 ```
 
-The Windows installer is created in `dist`.
+The custom setup executable and the silent NSIS payload used by the app updater are created in `dist`.
 
 ## App behavior
 

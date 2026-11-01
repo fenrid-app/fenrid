@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fenrid Setup</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Segoe UI", sans-serif;
+        color: #f3f5ff;
+        background: transparent;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      button, input { font: inherit; }
+
+      #window {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(147, 161, 255, .36);
+        border-radius: 17px;
+        background: #141722;
+        box-shadow: 0 18px 56px rgba(0, 0, 0, .48);
+      }
+
+      #titlebar {
+        display: flex;
+        height: 52px;
+        flex: 0 0 52px;
+        align-items: center;
+        gap: 10px;
+        padding-left: 18px;
+        background: #3149c4;
+        color: white;
+        user-select: none;
+        -webkit-app-region: drag;
+      }
+
+      #fenrid-logo {
+        width: 25px;
+        height: 25px;
+        border-radius: 7px;
+        object-fit: contain;
+      }
+
+      #title { font-size: 13px; font-weight: 650; letter-spacing: .1px; }
+
+      #window-controls {
+        display: flex;
+        height: 100%;
+        margin-left: auto;
+        -webkit-app-region: no-drag;
+      }
+
+      .window-control {
+        width: 48px;
+        border: 0;
+        background: transparent;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .window-control:hover { background: rgba(255, 255, 255, .16); }
+      #close:hover { background: #c42b1c; }
+
+      #content {
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        flex-direction: column;
+        padding: 38px 58px 28px;
+      }
+
+      .page { display: flex; min-height: 0; flex: 1; flex-direction: column; }
+      .page[hidden] { display: none; }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: #95a5ff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+      }
+
+      h1 { margin: 0 0 12px; font-size: 29px; font-weight: 650; letter-spacing: -.5px; }
+      .description { max-width: 520px; margin: 0; color: #b6bbcb; font-size: 14px; line-height: 1.65; }
+
+      .welcome-card {
+        display: flex;
+        align-items: center;
+        gap: 19px;
+        margin-top: 37px;
+        padding: 22px;
+        border: 1px solid #2a3044;
+        border-radius: 13px;
+        background: #1b2030;
+      }
+
+      .welcome-card img { width: 58px; height: 58px; border-radius: 14px; }
+      .welcome-card strong { display: block; margin-bottom: 5px; font-size: 15px; }
+      .welcome-card span { color: #aab1c7; font-size: 13px; line-height: 1.5; }
+
+      .path-row { display: flex; gap: 10px; margin-top: 26px; }
+
+      #install-path {
+        min-width: 0;
+        flex: 1;
+        padding: 12px 14px;
+        border: 1px solid #343a50;
+        border-radius: 8px;
+        outline: none;
+        background: #10131d;
+        color: #f3f5ff;
+        font-size: 13px;
+      }
+
+      #install-path:focus { border-color: #7081ff; }
+
+      #location-error {
+        margin: 9px 0 0;
+        color: #ffb5bb;
+        font-size: 13px;
+      }
+
+      #location-error[hidden] { display: none; }
+
+      .secondary, .primary {
+        min-height: 42px;
+        padding: 0 19px;
+        border-radius: 8px;
+        color: white;
+        font-size: 13px;
+        font-weight: 650;
+        cursor: pointer;
+      }
+
+      .secondary { border: 1px solid #3b425a; background: #252a3b; }
+      .secondary:hover { background: #30364a; }
+      .primary { border: 0; background: #4059f5; }
+      .primary:hover { background: #526aff; }
+      button:focus-visible { outline: 2px solid #c9d0ff; outline-offset: 3px; }
+      button:disabled { opacity: .55; cursor: default; }
+
+      #summary {
+        margin-top: 22px;
+        padding: 16px 18px;
+        border: 1px solid #2a3044;
+        border-radius: 9px;
+        background: #1b2030;
+        color: #b6bbcb;
+        font-size: 13px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+      }
+
+      #summary strong { color: #f3f5ff; }
+
+      .progress-track {
+        height: 7px;
+        margin-top: 29px;
+        overflow: hidden;
+        border-radius: 10px;
+        background: #282d3e;
+      }
+
+      .progress-track::after {
+        display: block;
+        width: 36%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #4059f5, #91a0ff);
+        content: "";
+        animation: progress 1.35s ease-in-out infinite;
+      }
+
+      @keyframes progress {
+        from { transform: translateX(-110%); }
+        to { transform: translateX(310%); }
+      }
+
+      #install-error {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border: 1px solid rgba(244, 95, 106, .42);
+        border-radius: 8px;
+        background: rgba(185, 56, 70, .12);
+        color: #ffb5bb;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      #install-error[hidden] { display: none; }
+
+      #footer {
+        display: flex;
+        min-height: 61px;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 19px;
+        border-top: 1px solid #292e3d;
+      }
+
+      #steps { display: flex; gap: 7px; }
+      .step-dot { width: 7px; height: 7px; border-radius: 50%; background: #3a4053; }
+      .step-dot.active { background: #8090ff; }
+      #footer-actions { display: flex; gap: 10px; }
+
+      #status { color: #aab1c7; font-size: 13px; }
+      #status:empty { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="window">
+      <header id="titlebar" aria-label="Fenrid setup title bar">
+        <img id="fenrid-logo" alt="">
+        <span id="title">Fenrid Setup</span>
+        <div id="window-controls">
+          <button id="minimize" class="window-control" type="button" aria-label="Minimize" title="Minimize">−</button>
+          <button id="close" class="window-control" type="button" aria-label="Close setup" title="Close">×</button>
+        </div>
+      </header>
+
+      <main id="content">
+        <section id="welcome-page" class="page">
+          <p class="eyebrow">Fenrid for Windows</p>
+          <h1>Welcome to Fenrid</h1>
+          <p class="description">Your Fenrid community, in a dedicated desktop app. This setup will install Fenrid for your Windows account.</p>
+          <div class="welcome-card">
+            <img class="fenrid-card-logo" alt="">
+            <div>
+              <strong>Quick and easy setup</strong>
+              <span>Choose an install location, then install Fenrid with your shortcuts ready to go.</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="location-page" class="page" hidden>
+          <p class="eyebrow">Step 1 of 2</p>
+          <h1>Choose install location</h1>
+          <p class="description">Fenrid will be installed in this folder. You can keep the recommended location or choose another folder.</p>
+          <div class="path-row">
+            <input id="install-path" type="text" aria-label="Installation folder" spellcheck="false">
+            <button id="browse" class="secondary" type="button">Browse</button>
+          </div>
+          <p id="location-error" role="alert" hidden></p>
+          <div id="summary"><strong>Shortcuts</strong><br>Fenrid will be added to your Start menu and desktop.</div>
+        </section>
+
+        <section id="ready-page" class="page" hidden>
+          <p class="eyebrow">Step 2 of 2</p>
+          <h1>Ready to install</h1>
+          <p class="description">Setup is ready to install Fenrid on this PC.</p>
+          <div id="ready-location" class="welcome-card"></div>
+        </section>
+
+        <section id="installing-page" class="page" hidden>
+          <p class="eyebrow">Installing Fenrid</p>
+          <h1>Almost there</h1>
+          <p class="description">Please wait while Fenrid is installed. Keep this window open until setup is complete.</p>
+          <div class="progress-track" role="progressbar" aria-label="Installing Fenrid"></div>
+          <p id="status" aria-live="polite">Installing Fenrid…</p>
+          <p id="install-error" role="alert" hidden></p>
+        </section>
+
+        <section id="complete-page" class="page" hidden>
+          <p class="eyebrow">Setup complete</p>
+          <h1>Fenrid is installed</h1>
+          <p class="description">Fenrid is ready to open. You can also launch it later from your desktop or Start menu.</p>
+          <div id="complete-location" class="welcome-card"></div>
+        </section>
+
+        <footer id="footer">
+          <div id="steps" aria-hidden="true">
+            <span class="step-dot active"></span>
+            <span class="step-dot"></span>
+            <span class="step-dot"></span>
+          </div>
+          <div id="footer-actions">
+            <button id="back" class="secondary" type="button" hidden>Back</button>
+            <button id="next" class="primary" type="button">Next</button>
+            <button id="install" class="primary" type="button" hidden>Install</button>
+            <button id="open" class="primary" type="button" hidden>Open Fenrid</button>
+            <button id="finish" class="secondary" type="button" hidden>Finish</button>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      (() => {
+        const pages = ['welcome-page', 'location-page', 'ready-page', 'installing-page', 'complete-page'];
+        const dots = Array.from(document.querySelectorAll('.step-dot'));
+        const pathInput = document.getElementById('install-path');
+        const back = document.getElementById('back');
+        const next = document.getElementById('next');
+        const install = document.getElementById('install');
+        const open = document.getElementById('open');
+        const finish = document.getElementById('finish');
+        const installError = document.getElementById('install-error');
+        const locationError = document.getElementById('location-error');
+        let currentPage = 'welcome-page';
+
+        const normalizeInstallPath = (value) => {
+          const normalized = value.trim().replace(/[\\/]+$/, '');
+          if (/(?:^|[\\/])Fenrid$/i.test(normalized)) return normalized;
+          return `${normalized}\\Fenrid`;
+        };
+
+        const showPage = (page) => {
+          currentPage = page;
+          for (const id of pages) {
+            document.getElementById(id).hidden = id !== page;
+          }
+          const isWelcome = page === 'welcome-page';
+          const isLocation = page === 'location-page';
+          const isReady = page === 'ready-page';
+          const isInstalling = page === 'installing-page';
+          const isComplete = page === 'complete-page';
+          back.hidden = !(isLocation || isReady);
+          next.hidden = !(isWelcome || isLocation);
+          install.hidden = !isReady;
+          open.hidden = !isComplete;
+          finish.hidden = !isComplete;
+          document.getElementById('steps').hidden = isInstalling || isComplete;
+          dots.forEach((dot, index) => {
+            dot.classList.toggle(
+              'active',
+              (isWelcome && index === 0) ||
+                ((isLocation || isReady) && index === 1) ||
+                (isComplete && index === 2),
+            );
+          });
+        };
+
+        const browse = async () => {
+          try {
+            const selected = await window.fenridSetup.chooseInstallPath();
+            if (selected) pathInput.value = normalizeInstallPath(selected);
+            locationError.hidden = true;
+          } catch {
+            locationError.textContent = 'Could not open the folder picker. Please enter a path.';
+            locationError.hidden = false;
+          }
+        };
+
+        document.getElementById('minimize').addEventListener('click', () => {
+          window.fenridSetup.minimize();
+        });
+        document.getElementById('close').addEventListener('click', () => {
+          window.fenridSetup.close();
+        });
+        document.getElementById('browse').addEventListener('click', browse);
+        back.addEventListener('click', () => {
+          showPage(currentPage === 'ready-page' ? 'location-page' : 'welcome-page');
+        });
+        next.addEventListener('click', () => {
+          if (currentPage === 'welcome-page') {
+            showPage('location-page');
+            pathInput.focus();
+            return;
+          }
+
+          if (!pathInput.value.trim()) {
+            locationError.textContent = 'Choose a folder before continuing.';
+            locationError.hidden = false;
+            pathInput.focus();
+            return;
+          }
+
+          pathInput.value = normalizeInstallPath(pathInput.value);
+          locationError.hidden = true;
+          document.getElementById('ready-location').textContent =
+            `Install folder: ${pathInput.value.trim()}`;
+          showPage('ready-page');
+        });
+        pathInput.addEventListener('input', () => {
+          locationError.hidden = true;
+        });
+        install.addEventListener('click', async () => {
+          install.disabled = true;
+          document.getElementById('close').disabled = true;
+          installError.hidden = true;
+          showPage('installing-page');
+          try {
+            await window.fenridSetup.install(pathInput.value.trim());
+          } catch {
+            install.disabled = false;
+            document.getElementById('close').disabled = false;
+            document.getElementById('status').textContent = 'Installation failed.';
+            installError.textContent =
+              'Fenrid could not be installed. Check the folder and try again.';
+            installError.hidden = false;
+          }
+        });
+        open.addEventListener('click', async () => {
+          open.disabled = true;
+          try {
+            await window.fenridSetup.launchFenrid();
+          } catch {
+            open.disabled = false;
+          }
+        });
+        finish.addEventListener('click', () => window.fenridSetup.close());
+        window.fenridSetup.onInstallStatus((status) => {
+          if (status.state === 'error') {
+            install.disabled = false;
+            document.getElementById('close').disabled = false;
+            document.getElementById('status').textContent = 'Installation failed.';
+            installError.textContent = status.message;
+            installError.hidden = false;
+            return;
+          }
+          if (status.state === 'complete') {
+            document.getElementById('close').disabled = false;
+            document.getElementById('complete-location').textContent =
+              `Installed in ${pathInput.value.trim()}`;
+            showPage('complete-page');
+          }
+        });
+        window.fenridSetup.getDefaultInstallPath().then((path) => {
+          pathInput.value = path;
+        });
+      })();
+    </script>
+  </body>
+</html>

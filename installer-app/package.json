@@ -1,0 +1,7 @@
+{
+  "name": "fenrid-custom-setup",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Custom Fenrid Windows setup wizard",
+  "main": "main.js"
+}

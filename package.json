@@ -6,7 +6,9 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --config electron-builder.config.js --win nsis --x64 --publish never",
+    "dist": "npm run dist:app && npm run dist:setup",
+    "dist:app": "electron-builder --config electron-builder.config.js --win nsis --x64 --publish never",
+    "dist:setup": "electron-builder --config installer-builder.config.js --win portable --x64 --publish never && node scripts/prepare-installer.js",
     "prepare:release": "node scripts/prepare-release.js"
   },
   "devDependencies": {
@@ -30,7 +32,7 @@
     "win": {
       "target": "nsis",
       "icon": "assets/fenrid.ico",
-      "artifactName": "Fenrid-${version}-${arch}.${ext}"
+      "artifactName": "Fenrid-${version}-${arch}-update.${ext}"
     },
     "nsis": {
       "oneClick": false,

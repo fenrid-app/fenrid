@@ -49,7 +49,8 @@ jobs:
           $tag = "v$version"
           $assets = @(
             (Join-Path 'dist' "Fenrid-$version-x64.exe"),
-            (Join-Path 'dist' "Fenrid-$version-x64.exe.blockmap"),
+            (Join-Path 'dist' "Fenrid-$version-x64-update.exe"),
+            (Join-Path 'dist' "Fenrid-$version-x64-update.exe.blockmap"),
             (Join-Path 'dist' 'latest.yml')
           )
           foreach ($asset in $assets) {
