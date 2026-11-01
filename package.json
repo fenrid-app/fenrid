@@ -2,7 +2,7 @@
   "name": "fenrid-desktop",
   "version": "1.0.4",
   "private": true,
-  "description": "Fenrid Installer",
+  "description": "Fenrid",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -18,7 +18,7 @@
   },
   "build": {
     "appId": "com.fenrid.desktop",
-    "productName": "Fenrid Installer",
+    "productName": "Fenrid",
     "directories": {
       "output": "dist"
     },
@@ -30,7 +30,7 @@
     "win": {
       "target": "nsis",
       "icon": "assets/fenrid.ico",
-      "artifactName": "Fenrid-Installer-${version}-${arch}.${ext}"
+      "artifactName": "Fenrid-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -38,7 +38,7 @@
       "allowElevation": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Fenrid Installer"
+      "shortcutName": "Fenrid"
     }
   }
 }

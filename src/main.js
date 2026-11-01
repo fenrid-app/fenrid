@@ -124,7 +124,7 @@ function createUpdateWindow() {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:">
-    <title>Fenrid Installer - Updates</title>
+    <title>Fenrid - Updates</title>
     <style>
       :root { color-scheme: dark; font-family: "Segoe UI", sans-serif; background: #3149c4; color: #f3f5ff; }
       * { box-sizing: border-box; }
@@ -143,7 +143,7 @@ function createUpdateWindow() {
   <body>
     <main>
       <img src="data:image/png;base64,${logo}" alt="Fenrid logo">
-      <h1 id="heading">Fenrid Installer</h1>
+      <h1 id="heading">Fenrid</h1>
       <p id="message">Checking for updates<span id="dots"></span></p>
       <button id="close" type="button" hidden>Close</button>
     </main>
@@ -162,7 +162,7 @@ function createUpdateWindow() {
 
         window.updateStatus = (status) => {
           if (status.state === 'checking') {
-            heading.textContent = 'Fenrid Installer';
+            heading.textContent = 'Fenrid';
             message.replaceChildren(
               document.createTextNode(status.message || 'Checking for updates'),
             );
@@ -195,7 +195,7 @@ function createUpdateWindow() {
   const popup = new BrowserWindow({
     width: 420,
     height: 460,
-    title: 'Fenrid Installer - Updates',
+    title: 'Fenrid - Updates',
     icon: path.join(__dirname, '..', 'assets', 'fenrid.ico'),
     backgroundColor: '#3149c4',
     autoHideMenuBar: true,
@@ -246,8 +246,8 @@ function createUpdateWindow() {
 function showAcknowledgements() {
   const options = {
     type: 'info',
-    title: 'Fenrid Installer - Acknowledgements',
-    message: 'Fenrid Installer',
+    title: 'Fenrid - Acknowledgements',
+    message: 'Fenrid',
     detail:
       'Built with Electron, Chromium, and electron-updater.\n\nFenrid and the Fenrid logo are the property of their respective owner.',
     buttons: ['Close'],
@@ -315,11 +315,11 @@ async function checkForUpdates(showWindow) {
 
 function createTray() {
   tray = new Tray(path.join(__dirname, '..', 'assets', 'fenrid.ico'));
-  tray.setToolTip('Fenrid Installer');
+  tray.setToolTip('Fenrid');
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
-        label: 'Fenrid Installer',
+        label: 'Fenrid',
         enabled: false,
         icon: path.join(__dirname, '..', 'assets', 'fenrid-logo.png'),
       },
@@ -333,7 +333,7 @@ function createTray() {
       { label: 'Acknowledgements', click: showAcknowledgements },
       { type: 'separator' },
       {
-        label: 'Quit Fenrid Installer',
+        label: 'Quit Fenrid',
         click: () => {
           isQuitting = true;
           app.quit();
@@ -369,7 +369,7 @@ function configureAutoUpdates() {
     showUpdateStatus({
       state: 'downloading',
       heading: 'Update found',
-      message: `Downloading Fenrid Installer ${info.version}.`,
+      message: `Downloading Fenrid ${info.version}.`,
       canClose: false,
     });
   });
@@ -378,7 +378,7 @@ function configureAutoUpdates() {
     showUpdateStatus({
       state: 'current',
       heading: "You're up to date",
-      message: 'You have the latest version of Fenrid Installer.',
+      message: 'You have the latest version of Fenrid.',
       canClose: true,
     });
   });
@@ -396,7 +396,7 @@ function configureAutoUpdates() {
     showUpdateStatus({
       state: 'ready',
       heading: 'Update ready',
-      message: 'Fenrid Installer will restart to finish updating.',
+      message: 'Fenrid will restart to finish updating.',
       canClose: false,
     });
     setTimeout(() => {
@@ -416,7 +416,7 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    title: 'Fenrid Installer',
+    title: 'Fenrid',
     icon: path.join(__dirname, '..', 'assets', 'fenrid.ico'),
     backgroundColor: '#0f0f14',
     autoHideMenuBar: true,
@@ -429,7 +429,7 @@ function createWindow() {
 
   mainWindow.webContents.on('page-title-updated', (event) => {
     event.preventDefault();
-    mainWindow.setTitle('Fenrid Installer');
+    mainWindow.setTitle('Fenrid');
   });
 
   mainWindow.on('close', (event) => {

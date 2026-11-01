@@ -1,4 +1,4 @@
-name: Publish Fenrid Windows installer
+name: Publish Fenrid for Windows
 
 on:
   push:
@@ -48,8 +48,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $tag = "v$version"
           $assets = @(
-            (Join-Path 'dist' "Fenrid-Installer-$version-x64.exe"),
-            (Join-Path 'dist' "Fenrid-Installer-$version-x64.exe.blockmap"),
+            (Join-Path 'dist' "Fenrid-$version-x64.exe"),
+            (Join-Path 'dist' "Fenrid-$version-x64.exe.blockmap"),
             (Join-Path 'dist' 'latest.yml')
           )
           foreach ($asset in $assets) {
@@ -57,7 +57,7 @@ jobs:
               throw "Expected release asset was not built: $asset"
             }
           }
-          gh release create $tag @assets --target $env:GITHUB_SHA --title "Fenrid Installer $tag" --notes "Windows installer and update feed for Fenrid Installer." --latest
+          gh release create $tag @assets --target $env:GITHUB_SHA --title "Fenrid $tag" --notes "Windows installer and update feed for Fenrid." --latest
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         env:
           GH_TOKEN: ${{ github.token }}
