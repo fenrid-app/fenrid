@@ -404,7 +404,6 @@ function createTray() {
       {
         label: 'Fenrid',
         enabled: false,
-        icon: path.join(__dirname, '..', 'assets', 'fenrid-logo.png'),
       },
       { type: 'separator' },
       {
