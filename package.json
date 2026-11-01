@@ -36,6 +36,9 @@
       "oneClick": false,
       "perMachine": false,
       "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerSidebar": "assets/fenrid-installer-sidebar.bmp",
+      "uninstallerSidebar": "assets/fenrid-installer-sidebar.bmp",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Fenrid"

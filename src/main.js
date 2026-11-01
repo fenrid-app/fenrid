@@ -410,6 +410,58 @@ function configureAutoUpdates() {
   }, UPDATE_CHECK_DELAY_MS);
 }
 
+function addFenridTitleBar(window) {
+  let titleBarCss;
+
+  const installTitleBar = async () => {
+    if (window.isDestroyed() || !isFenridUrl(window.webContents.getURL())) {
+      return;
+    }
+
+    try {
+      if (titleBarCss) {
+        await window.webContents.removeInsertedCSS(titleBarCss);
+      }
+
+      titleBarCss = await window.webContents.insertCSS(`
+        body { padding-top: 38px !important; }
+        #fenrid-desktop-titlebar {
+          position: fixed;
+          z-index: 2147483647;
+          inset: 0 0 auto;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-right: 138px;
+          background: #3149c4;
+          color: #fff;
+          font: 600 13px "Segoe UI", sans-serif;
+          -webkit-app-region: drag;
+          user-select: none;
+        }
+      `);
+
+      await window.webContents.executeJavaScript(`
+        (() => {
+          if (!document.body || document.getElementById('fenrid-desktop-titlebar')) return;
+          const titleBar = document.createElement('div');
+          titleBar.id = 'fenrid-desktop-titlebar';
+          titleBar.setAttribute('aria-label', 'Fenrid window title bar');
+          titleBar.textContent = 'Fenrid';
+          document.body.appendChild(titleBar);
+        })();
+      `);
+    } catch (error) {
+      console.error('Could not install the Fenrid window title bar:', error);
+    }
+  };
+
+  window.webContents.on('did-finish-load', () => {
+    void installTitleBar();
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -420,6 +472,12 @@ function createWindow() {
     icon: path.join(__dirname, '..', 'assets', 'fenrid.ico'),
     backgroundColor: '#0f0f14',
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#3149c4',
+      symbolColor: '#ffffff',
+      height: 38,
+    },
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -431,6 +489,8 @@ function createWindow() {
     event.preventDefault();
     mainWindow.setTitle('Fenrid');
   });
+
+  addFenridTitleBar(mainWindow);
 
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
