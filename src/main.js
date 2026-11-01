@@ -14,7 +14,7 @@ const path = require('node:path');
 
 const FENRID_URL = 'https://fenrid.com/channels/me';
 const FENRID_PERMISSIONS = new Set(['media', 'notifications']);
-const UPDATE_CHECK_DELAY_MS = 5000;
+const UPDATE_CHECK_DELAY_MS = 15000;
 
 let mainWindow;
 let tray;
@@ -487,9 +487,6 @@ function configureAutoUpdates() {
     }, 1200);
   });
 
-  setTimeout(() => {
-    void checkForUpdates(false);
-  }, UPDATE_CHECK_DELAY_MS);
 }
 
 function addFenridTitleBar(window) {
@@ -726,6 +723,17 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  if (updatesConfigured) {
+    const window = mainWindow;
+    window.webContents.once('did-finish-load', () => {
+      setTimeout(() => {
+        if (!isQuitting && mainWindow === window && !window.isDestroyed()) {
+          void checkForUpdates(false);
+        }
+      }, UPDATE_CHECK_DELAY_MS);
+    });
+  }
 
   void mainWindow.loadURL(FENRID_URL).catch((error) => {
     console.error('Could not load Fenrid:', error);
