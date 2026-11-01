@@ -1,6 +1,7 @@
 const {
   app,
   BrowserWindow,
+  ipcMain,
   Menu,
   Tray,
   dialog,
@@ -79,6 +80,56 @@ function configurePermissions() {
   );
 }
 
+function configureWindowControls() {
+  ipcMain.on('fenrid-window-control', (event, action) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (
+      !window ||
+      (window !== mainWindow && window !== updateWindow) ||
+      (window === mainWindow && !isFenridUrl(event.sender.getURL()))
+    ) {
+      return;
+    }
+
+    if (action === 'minimize') {
+      window.minimize();
+    } else if (action === 'toggle-maximize') {
+      if (window.isMaximized()) {
+        window.unmaximize();
+      } else {
+        window.maximize();
+      }
+    } else if (action === 'close') {
+      window.close();
+    }
+  });
+
+  ipcMain.handle('fenrid-window-is-maximized', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (
+      !window ||
+      (window !== mainWindow && window !== updateWindow) ||
+      (window === mainWindow && !isFenridUrl(event.sender.getURL()))
+    ) {
+      return false;
+    }
+
+    return window.isMaximized();
+  });
+}
+
+function trackWindowMaximizedState(window) {
+  const notifyRenderer = () => {
+    if (!window.isDestroyed()) {
+      window.webContents.send('fenrid-window-maximized', window.isMaximized());
+    }
+  };
+
+  window.on('maximize', notifyRenderer);
+  window.on('unmaximize', notifyRenderer);
+  window.webContents.on('did-finish-load', notifyRenderer);
+}
+
 function showWindow() {
   if (!mainWindow || mainWindow.isDestroyed()) {
     createWindow();
@@ -129,8 +180,13 @@ function createUpdateWindow() {
       :root { color-scheme: dark; font-family: "Segoe UI", sans-serif; background: #3149c4; color: #f3f5ff; }
       * { box-sizing: border-box; }
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 66px 28px 28px; background: #3149c4; }
-      #fenrid-desktop-titlebar { position: fixed; z-index: 10; inset: 0 0 auto; height: 38px; display: flex; align-items: center; gap: 9px; padding: 0 138px 0 14px; background: #3149c4; color: #fff; font: 600 13px "Segoe UI", sans-serif; -webkit-app-region: drag; user-select: none; }
+      #fenrid-desktop-titlebar { position: fixed; z-index: 10; inset: 0 0 auto; height: 38px; display: flex; align-items: center; gap: 9px; padding-left: 14px; background: #3149c4; color: #fff; font: 600 13px "Segoe UI", sans-serif; -webkit-app-region: drag; user-select: none; }
       #fenrid-desktop-titlebar img { width: 22px !important; height: 22px !important; max-width: 22px; max-height: 22px; border-radius: 6px; }
+      .fenrid-titlebar-controls { height: 38px; display: flex; margin-left: auto; -webkit-app-region: no-drag; }
+      .fenrid-titlebar-controls button { width: 46px; min-width: 0; height: 38px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: #fff; font: 16px "Segoe UI", sans-serif; }
+      .fenrid-titlebar-controls button:hover { background: rgba(255,255,255,.16); }
+      .fenrid-titlebar-controls button:last-child:hover { background: #c42b1c; }
+      .fenrid-titlebar-controls button:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
       main { width: 100%; max-width: 348px; min-height: 340px; padding: 40px 32px 32px; border-radius: 12px; background: #191b22; box-shadow: 0 16px 38px rgba(13, 19, 51, .3); display: flex; flex-direction: column; align-items: center; text-align: center; }
       img { display: block; width: 48px !important; height: 48px !important; max-width: 48px; max-height: 48px; object-fit: contain; }
       h1 { margin: 18px 0 9px; font-size: 22px; font-weight: 650; letter-spacing: -.3px; }
@@ -154,8 +210,24 @@ function createUpdateWindow() {
         const titleBar = document.createElement('header');
         titleBar.id = 'fenrid-desktop-titlebar';
         titleBar.setAttribute('aria-label', 'Fenrid window title bar');
-        titleBar.innerHTML = '<img src="data:image/png;base64,${logo}" alt=""><span>Fenrid</span>';
+        titleBar.innerHTML = '<img src="data:image/png;base64,${logo}" alt=""><span>Fenrid</span><div class="fenrid-titlebar-controls"><button type="button" data-window-action="minimize" aria-label="Minimize" title="Minimize">−</button><button type="button" data-window-action="toggle-maximize" aria-label="Maximize" title="Maximize">□</button><button type="button" data-window-action="close" aria-label="Close" title="Close">×</button></div>';
         document.body.appendChild(titleBar);
+        const maximizeButton = titleBar.querySelector('[data-window-action="toggle-maximize"]');
+        titleBar.querySelectorAll('[data-window-action]').forEach((button) => {
+          button.addEventListener('click', () => {
+            window.fenridWindowControls[button.dataset.windowAction]();
+          });
+        });
+        window.fenridWindowControls.getMaximized().then((isMaximized) => {
+          maximizeButton.textContent = isMaximized ? '❐' : '□';
+          maximizeButton.setAttribute('aria-label', isMaximized ? 'Restore' : 'Maximize');
+          maximizeButton.title = isMaximized ? 'Restore' : 'Maximize';
+        });
+        window.fenridWindowControls.onMaximizedChange((isMaximized) => {
+          maximizeButton.textContent = isMaximized ? '❐' : '□';
+          maximizeButton.setAttribute('aria-label', isMaximized ? 'Restore' : 'Maximize');
+          maximizeButton.title = isMaximized ? 'Restore' : 'Maximize';
+        });
 
         const heading = document.getElementById('heading');
         const message = document.getElementById('message');
@@ -207,12 +279,7 @@ function createUpdateWindow() {
     icon: path.join(__dirname, '..', 'assets', 'fenrid.ico'),
     backgroundColor: '#3149c4',
     autoHideMenuBar: true,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#3149c4',
-      symbolColor: '#ffffff',
-      height: 38,
-    },
+    frame: false,
     resizable: true,
     maximizable: true,
     minimizable: true,
@@ -220,10 +287,12 @@ function createUpdateWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
   updateWindow = popup;
   updateWindowReady = false;
+  trackWindowMaximizedState(popup);
 
   updateDialogStatus = {
     state: 'checking',
@@ -441,7 +510,29 @@ function addFenridTitleBar(window) {
       }
 
       titleBarCss = await window.webContents.insertCSS(`
-        body { padding-top: 38px !important; }
+        html, body {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+        }
+        #fenrid-desktop-content {
+          position: fixed !important;
+          inset: 38px 0 0 !important;
+          width: auto !important;
+          height: auto !important;
+          min-height: 0 !important;
+          max-height: none !important;
+          overflow: hidden !important;
+          transform: translateZ(0) !important;
+        }
+        [data-fenrid-desktop-app-root] {
+          width: 100% !important;
+          height: 100% !important;
+          min-height: 0 !important;
+          max-height: 100% !important;
+        }
         #fenrid-desktop-titlebar {
           position: fixed;
           z-index: 2147483647;
@@ -450,7 +541,7 @@ function addFenridTitleBar(window) {
           display: flex;
           align-items: center;
           gap: 9px;
-          padding: 0 138px 0 14px;
+          padding-left: 14px;
           background: #3149c4;
           color: #fff;
           font: 600 13px "Segoe UI", sans-serif;
@@ -464,16 +555,85 @@ function addFenridTitleBar(window) {
           max-height: 22px;
           border-radius: 6px;
         }
+        .fenrid-titlebar-controls {
+          height: 38px;
+          display: flex;
+          margin-left: auto;
+          -webkit-app-region: no-drag;
+        }
+        .fenrid-titlebar-controls button {
+          width: 46px;
+          min-width: 0;
+          height: 38px;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          border-radius: 0;
+          background: transparent;
+          color: #fff;
+          font: 16px "Segoe UI", sans-serif;
+        }
+        .fenrid-titlebar-controls button:hover { background: rgba(255,255,255,.16); }
+        .fenrid-titlebar-controls button:last-child:hover { background: #c42b1c; }
+        .fenrid-titlebar-controls button:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
       `);
 
       await window.webContents.executeJavaScript(`
         (() => {
-          if (!document.body || document.getElementById('fenrid-desktop-titlebar')) return;
-          const titleBar = document.createElement('div');
-          titleBar.id = 'fenrid-desktop-titlebar';
-          titleBar.setAttribute('aria-label', 'Fenrid window title bar');
-          titleBar.innerHTML = '<img src="${logo}" alt=""><span>Fenrid</span>';
-          document.body.appendChild(titleBar);
+          if (!document.body) return;
+          let titleBar = document.getElementById('fenrid-desktop-titlebar');
+          if (!titleBar) {
+            titleBar = document.createElement('div');
+            titleBar.id = 'fenrid-desktop-titlebar';
+            titleBar.setAttribute('aria-label', 'Fenrid window title bar');
+            titleBar.innerHTML = '<img src="${logo}" alt=""><span>Fenrid</span><div class="fenrid-titlebar-controls"><button type="button" data-window-action="minimize" aria-label="Minimize" title="Minimize">−</button><button type="button" data-window-action="toggleMaximize" aria-label="Maximize" title="Maximize">□</button><button type="button" data-window-action="close" aria-label="Close" title="Close">×</button></div>';
+          }
+
+          let content = document.getElementById('fenrid-desktop-content');
+          if (!content) {
+            content = document.createElement('div');
+            content.id = 'fenrid-desktop-content';
+            const appRoot = document.querySelector('#root, #__next, [data-reactroot]') ||
+              Array.from(document.body.children).find((element) => element.tagName === 'DIV');
+            if (appRoot) appRoot.setAttribute('data-fenrid-desktop-app-root', '');
+            for (const node of Array.from(document.body.childNodes)) {
+              if (node !== titleBar) content.appendChild(node);
+            }
+            document.body.appendChild(content);
+          } else {
+            for (const node of Array.from(document.body.childNodes)) {
+              if (node !== content && node !== titleBar) content.appendChild(node);
+            }
+          }
+
+          if (!window.fenridDesktopContentObserver) {
+            window.fenridDesktopContentObserver = new MutationObserver(() => {
+              for (const node of Array.from(document.body.childNodes)) {
+                if (node !== content && node !== titleBar) content.appendChild(node);
+              }
+            });
+            window.fenridDesktopContentObserver.observe(document.body, { childList: true });
+          }
+          if (titleBar.parentElement !== document.body) document.body.appendChild(titleBar);
+
+          if (titleBar.dataset.controlsInstalled) return;
+          titleBar.dataset.controlsInstalled = 'true';
+          const maximizeButton = titleBar.querySelector('[data-window-action="toggleMaximize"]');
+          titleBar.querySelectorAll('[data-window-action]').forEach((button) => {
+            button.addEventListener('click', () => {
+              window.fenridWindowControls[button.dataset.windowAction]();
+            });
+          });
+          window.fenridWindowControls.getMaximized().then((isMaximized) => {
+            maximizeButton.textContent = isMaximized ? '❐' : '□';
+            maximizeButton.setAttribute('aria-label', isMaximized ? 'Restore' : 'Maximize');
+            maximizeButton.title = isMaximized ? 'Restore' : 'Maximize';
+          });
+          window.fenridWindowControls.onMaximizedChange((isMaximized) => {
+            maximizeButton.textContent = isMaximized ? '❐' : '□';
+            maximizeButton.setAttribute('aria-label', isMaximized ? 'Restore' : 'Maximize');
+            maximizeButton.title = isMaximized ? 'Restore' : 'Maximize';
+          });
         })();
       `);
     } catch (error) {
@@ -496,18 +656,15 @@ function createWindow() {
     icon: path.join(__dirname, '..', 'assets', 'fenrid.ico'),
     backgroundColor: '#0f0f14',
     autoHideMenuBar: true,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#3149c4',
-      symbolColor: '#ffffff',
-      height: 38,
-    },
+    frame: false,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
+  trackWindowMaximizedState(mainWindow);
 
   mainWindow.webContents.on('page-title-updated', (event) => {
     event.preventDefault();
@@ -562,6 +719,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  configureWindowControls();
   configurePermissions();
   createTray();
   configureAutoUpdates();

@@ -26,7 +26,7 @@ The Windows installer is created in `dist`.
 
 - Opens `https://fenrid.com/channels/me`; Fenrid redirects to sign-in when needed and returns signed-in users to their community.
 - Displays the supplied Fenrid logo as the application, window, and taskbar icon; labels the application and shortcuts "Fenrid."
-- Uses a blue, integrated title bar with native Windows window controls.
+- Uses a blue, integrated title bar with custom minimize, maximize/restore, and close controls in both the main app and update window.
 - Allows media and notification permissions only for Fenrid. Closing the window hides the app in the system tray, keeping its live session available; choose **Quit Fenrid** in the tray menu to exit.
 - Checks its configured GitHub release feed when it starts, downloads updates, and silently restarts to install them.
 - Opens links outside Fenrid in the default web browser.
