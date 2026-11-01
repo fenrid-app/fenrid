@@ -509,6 +509,17 @@ function addFenridTitleBar(window) {
       }
 
       titleBarCss = await window.webContents.insertCSS(`
+        *,
+        *::before,
+        *::after {
+          scrollbar-width: none !important;
+        }
+        *::-webkit-scrollbar,
+        *::-webkit-scrollbar-corner {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
         html, body {
           width: 100% !important;
           height: 100% !important;
