@@ -128,7 +128,9 @@ function createUpdateWindow() {
     <style>
       :root { color-scheme: dark; font-family: "Segoe UI", sans-serif; background: #3149c4; color: #f3f5ff; }
       * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 28px; background: #3149c4; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 66px 28px 28px; background: #3149c4; }
+      #fenrid-desktop-titlebar { position: fixed; z-index: 10; inset: 0 0 auto; height: 38px; display: flex; align-items: center; gap: 9px; padding: 0 138px 0 14px; background: #3149c4; color: #fff; font: 600 13px "Segoe UI", sans-serif; -webkit-app-region: drag; user-select: none; }
+      #fenrid-desktop-titlebar img { width: 22px !important; height: 22px !important; max-width: 22px; max-height: 22px; border-radius: 6px; }
       main { width: 100%; max-width: 348px; min-height: 340px; padding: 40px 32px 32px; border-radius: 12px; background: #191b22; box-shadow: 0 16px 38px rgba(13, 19, 51, .3); display: flex; flex-direction: column; align-items: center; text-align: center; }
       img { display: block; width: 48px !important; height: 48px !important; max-width: 48px; max-height: 48px; object-fit: contain; }
       h1 { margin: 18px 0 9px; font-size: 22px; font-weight: 650; letter-spacing: -.3px; }
@@ -149,6 +151,12 @@ function createUpdateWindow() {
     </main>
     <script>
       (() => {
+        const titleBar = document.createElement('header');
+        titleBar.id = 'fenrid-desktop-titlebar';
+        titleBar.setAttribute('aria-label', 'Fenrid window title bar');
+        titleBar.innerHTML = '<img src="data:image/png;base64,${logo}" alt=""><span>Fenrid</span>';
+        document.body.appendChild(titleBar);
+
         const heading = document.getElementById('heading');
         const message = document.getElementById('message');
         const close = document.getElementById('close');
@@ -199,9 +207,15 @@ function createUpdateWindow() {
     icon: path.join(__dirname, '..', 'assets', 'fenrid.ico'),
     backgroundColor: '#3149c4',
     autoHideMenuBar: true,
-    resizable: false,
-    maximizable: false,
-    minimizable: false,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#3149c4',
+      symbolColor: '#ffffff',
+      height: 38,
+    },
+    resizable: true,
+    maximizable: true,
+    minimizable: true,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -412,6 +426,9 @@ function configureAutoUpdates() {
 
 function addFenridTitleBar(window) {
   let titleBarCss;
+  const logo = `data:image/png;base64,${fs
+    .readFileSync(path.join(__dirname, '..', 'assets', 'fenrid-logo.png'))
+    .toString('base64')}`;
 
   const installTitleBar = async () => {
     if (window.isDestroyed() || !isFenridUrl(window.webContents.getURL())) {
@@ -432,13 +449,20 @@ function addFenridTitleBar(window) {
           height: 38px;
           display: flex;
           align-items: center;
-          justify-content: center;
-          padding-right: 138px;
+          gap: 9px;
+          padding: 0 138px 0 14px;
           background: #3149c4;
           color: #fff;
           font: 600 13px "Segoe UI", sans-serif;
           -webkit-app-region: drag;
           user-select: none;
+        }
+        #fenrid-desktop-titlebar img {
+          width: 22px !important;
+          height: 22px !important;
+          max-width: 22px;
+          max-height: 22px;
+          border-radius: 6px;
         }
       `);
 
@@ -448,7 +472,7 @@ function addFenridTitleBar(window) {
           const titleBar = document.createElement('div');
           titleBar.id = 'fenrid-desktop-titlebar';
           titleBar.setAttribute('aria-label', 'Fenrid window title bar');
-          titleBar.textContent = 'Fenrid';
+          titleBar.innerHTML = '<img src="${logo}" alt=""><span>Fenrid</span>';
           document.body.appendChild(titleBar);
         })();
       `);
