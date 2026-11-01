@@ -4,8 +4,8 @@ const path = require('node:path');
 const repository = process.env.GITHUB_REPOSITORY;
 const token = process.env.GITHUB_TOKEN;
 
-if (!repository || !token) {
-  throw new Error('GITHUB_REPOSITORY and GITHUB_TOKEN are required to prepare a release.');
+if (!repository) {
+  throw new Error('GITHUB_REPOSITORY is required to prepare a release.');
 }
 
 function parseVersion(value) {
@@ -28,15 +28,17 @@ function compareVersions(left, right) {
 }
 
 async function main() {
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(
     `https://api.github.com/repos/${repository}/releases/latest`,
-    {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    },
+    { headers },
   );
 
   let latestVersion = null;
@@ -57,17 +59,15 @@ async function main() {
 
   if (!latestVersion) {
     latestVersion = currentVersion;
-  } else {
-    if (!packageLock.packages || !packageLock.packages['']) {
-      throw new Error('The npm lockfile is missing its root package entry.');
-    }
-
-    const latestBase =
-      compareVersions(currentVersion, latestVersion) > 0
-        ? currentVersion
-        : latestVersion;
-    latestVersion = [...latestBase];
+  } else if (compareVersions(currentVersion, latestVersion) <= 0) {
+    latestVersion = [...latestVersion];
     latestVersion[2] += 1;
+  } else {
+    latestVersion = currentVersion;
+  }
+
+  if (!packageLock.packages || !packageLock.packages['']) {
+    throw new Error('The npm lockfile is missing its root package entry.');
   }
 
   const version = latestVersion.join('.');

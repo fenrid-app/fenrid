@@ -1,13 +1,12 @@
 {
   "name": "fenrid-desktop",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "Fenrid Installer",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --config electron-builder.config.js --win nsis --x64",
-    "dist:publish": "electron-builder --config electron-builder.config.js --win nsis --x64 --publish always",
+    "dist": "electron-builder --config electron-builder.config.js --win nsis --x64 --publish never",
     "prepare:release": "node scripts/prepare-release.js"
   },
   "devDependencies": {
