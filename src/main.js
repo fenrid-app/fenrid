@@ -536,12 +536,22 @@ function addFenridTitleBar(window) {
           max-height: none !important;
           overflow: hidden !important;
           transform: translateZ(0) !important;
+          isolation: isolate !important;
+          z-index: 0 !important;
         }
         [data-fenrid-desktop-app-root] {
-          width: 100% !important;
-          height: 100% !important;
+          position: absolute !important;
+          inset: 0 !important;
+          box-sizing: border-box !important;
+          width: auto !important;
+          height: auto !important;
+          min-width: 0 !important;
           min-height: 0 !important;
+          max-width: 100% !important;
           max-height: 100% !important;
+          overflow: hidden !important;
+          isolation: isolate !important;
+          z-index: 0 !important;
         }
         #fenrid-desktop-titlebar {
           position: fixed;
